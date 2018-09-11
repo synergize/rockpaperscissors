@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -44,9 +45,22 @@ namespace rockpaperscissors
             Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
         }
 
-        private async Task Client_MessageRecieved(SocketMessage arg)
+        private async Task Client_MessageRecieved(SocketMessage MessageParam)
         {
-           
+            var Message = MessageParam as SocketUserMessage;
+            var Context = new SocketCommandContext(Client, Message);
+
+            if (Context.Message == null || Context.Message.Content == "") return;
+            if (Context.User.IsBot) return;
+
+            int ArgPos = 0;
+            if (!(Message.HasCharPrefix('!', ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos))) return;
+
+            var Result = await Commands.ExecuteAsync(Context, ArgPos);
+            if (!Result.IsSuccess)
+                Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
+            
+
         }
         private async Task Client_Ready()
         {
