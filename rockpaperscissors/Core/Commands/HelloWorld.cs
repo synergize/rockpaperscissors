@@ -13,5 +13,22 @@ namespace rockpaperscissors.Core.Commands
         {
             await Context.Channel.SendMessageAsync("Hello World");
         }
+        [Command("start")]
+        public async Task StartGame()
+        {
+            await Context.Channel.SendMessageAsync("Rock, Paper, Scissor, Shoot!");
+            
+        }
+        [Command("help")]
+        public async Task Help([Remainder]string Input = "None")
+        {
+            EmbedBuilder Embed = new EmbedBuilder();
+            Embed.WithAuthor("Game Instructions", Context.User.GetAvatarUrl());
+            Embed.WithFooter($"The owner of this bot {Context.Guild.Owner.ToString()}");
+            Embed.WithDescription($"Place holder description. \n [This is a hyperlink](https://discordapp.com/developers)");
+            Embed.AddInlineField("User Input", Input);
+
+            await Context.Channel.SendMessageAsync("", false, Embed.Build());
+        }
     }
 }

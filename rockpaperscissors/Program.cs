@@ -57,8 +57,10 @@ namespace rockpaperscissors
             if (!(Message.HasCharPrefix('!', ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos))) return;
 
             var Result = await Commands.ExecuteAsync(Context, ArgPos);
-            if (!Result.IsSuccess)
+            if (!Result.IsSuccess)           
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
+
+
             
 
         }
