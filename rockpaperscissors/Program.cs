@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Collections.Generic;
 
 namespace rockpaperscissors
 {
@@ -38,6 +39,7 @@ namespace rockpaperscissors
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
             await Task.Delay(-1);
+            
         }
 
         private async Task Client_Log(LogMessage Message)

