@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using rockpaperscissors.Core.Moderation;
 
 namespace rockpaperscissors.Core.Commands
 {
@@ -18,7 +17,7 @@ namespace rockpaperscissors.Core.Commands
         //public async Task StartGame()
         //{
         //    await Context.Channel.SendMessageAsync("Rock, Paper, Scissor, Shoot!");
-            
+
         //}
         //[Command("help")]
         //public async Task Help([Remainder]string Input = "None")
@@ -52,23 +51,23 @@ namespace rockpaperscissors.Core.Commands
 
         }
 
-        }
-
-        public class Player : Commands
-        {
-            public Player(string name)
-            {
-                name = Context.User.Username;
-            }
-            public class GameObject : Player
-            {
-                public GameObject(string name) : base(name)
-                {
-                    string playerName = name;
-                }
-                
-            }
-        }
-
     }
+
+    public class Player : Commands
+    {
+        public Player(string name)
+        {
+            name = Context.User.Username;
+        }
+
+        public class GameObject : Player
+        {
+            public GameObject(string name) : base(name)
+            {
+                string playerName = name;
+            }
+
+        }
+    } 
+    
 }
