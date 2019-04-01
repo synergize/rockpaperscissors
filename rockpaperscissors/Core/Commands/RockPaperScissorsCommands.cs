@@ -7,7 +7,7 @@ using Discord.Commands;
 
 namespace rockpaperscissors.Core.Commands
 {
-    public class Commands : ModuleBase<SocketCommandContext>
+    public class RockPaperScissorsCommands : ModuleBase<SocketCommandContext>
     {
         public List<int> counter = new List<int>();
 
@@ -53,22 +53,22 @@ namespace rockpaperscissors.Core.Commands
 
         }
 
-        public class Player : Commands
-        {
-            public Player(string name)
-            {
-                name = Context.User.Username;
-            }
+        //public class Player : RockPaperScissorsCommands
+        //{
+        //    public Player(string name)
+        //    {
+        //        name = Context.User.Username;
+        //    }
 
-            public class GameObject : Player
-            {
-                public GameObject(string name) : base(name)
-                {
-                    string playerName = name;
-                }
+        //    public class GameObject : Player
+        //    {
+        //        public GameObject(string name) : base(name)
+        //        {
+        //            string playerName = name;
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
     }
 }
