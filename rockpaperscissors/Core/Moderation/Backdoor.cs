@@ -38,9 +38,9 @@ namespace rockpaperscissors.Core.Moderation
                 Invites = null;
                 Invites = await Guild.GetInvitesAsync();
                 EmbedBuilder Embed = new EmbedBuilder();
-                Embed.WithAuthor($"Invites for guild {Guild.Name}:", Guild.IconUrl);                
-                foreach (var Current in Invites)               
-                    Embed.AddInlineField("Invite:", $"[Invite]({Current.Url})");
+                Embed.WithAuthor($"Invites for guild {Guild.Name}:", Guild.IconUrl);
+                foreach (var Current in Invites)
+                    Embed.AddField("Invite:", $"[Invite]({Current.Url})");
                 
                 await Context.Channel.SendMessageAsync("", false, Embed.Build());
             }
