@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
+using rockpaperscissors.Core.Data.Objects;
 
 namespace rockpaperscissors.Core.Commands
 {
     public class RockPaperScissorsCommands : ModuleBase<SocketCommandContext>
     {
-        public List<int> counter = new List<int>();
-
+        string FilePath = @"..\netcoreapp2.0\Data";
+        string RPSPlayerFile = @"..\netcoreapp2.0\Data\Players.json";
+        PlayerObject P1 = new PlayerObject(129804455964049408, 2, 4);
+        List<PlayerObject> TestList = new List<PlayerObject>();
         bool boolean = true;
 
         [Command("void")]
@@ -29,27 +32,15 @@ namespace rockpaperscissors.Core.Commands
             Embed.WithFooter($"The owner of this bot {Context.Guild.Owner.ToString()}");
             Embed.WithDescription($"Place holder description. \n [This is a hyperlink](https://discordapp.com/developers)");
             Embed.AddField("User Input", Input);
-            boolean = false;
-            try
-            {
-                counter.Add(1);
-                for (int i = 0; i < counter.Count; i++)
-                {
-                    Embed.AddField("Counter", counter[i]);
-                }
-            }
-            catch (Exception ex)
-            {
-                var error = ex;
-            }
 
-
-            await Context.Channel.SendMessageAsync("", false, Embed.Build());
+        }
 
         [Command("play")]
         public async Task StartGame()
         {
-            //Player PlayerOne = new Player(Context.User.Username);
+            CheckDirectory(FilePath);
+            TestList.Add(P1);
+            PlayerEntry(TestList);
 
         }
         ///<summary>
@@ -57,7 +48,7 @@ namespace rockpaperscissors.Core.Commands
         /// </summary>
         public bool CodeExists()
         {
-            return File.Exists(BaseCodesFile);
+            return File.Exists(RPSPlayerFile);
         }
         ///<summary>
         /// Checks if Directory ..\netcoreapp2.2\Data exists. If it doesn't, we create the directory and a blank BaseCodes.Json file
@@ -69,22 +60,22 @@ namespace rockpaperscissors.Core.Commands
             {
                 //If the directory for our basecode json file doesn't exist we create it along with the json file. 
                 DirectoryInfo dir = Directory.CreateDirectory(file);
-                var CreateFile = File.Create(BaseCodesFile);
+                var CreateFile = File.Create(RPSPlayerFile);
                 CreateFile.Close();
             }
             else if (!CodeExists())
             {
                 //if the directory exists but the file doesn't, we create the file. 
-                var CreateFile = File.Create(BaseCodesFile);
+                var CreateFile = File.Create(RPSPlayerFile);
                 CreateFile.Close();
             }
         }
         ///<summary>
-        /// Returns a list of <see cref="CodeLists"/> objects from a file locate in the passed in "File" location.
+        /// Returns a list of <see cref="PlayerObject"/> objects from a file locate in the passed in "File" location.
         /// </summary>
-        public List<CodeLists> ReadFromJson(string file)
+        public List<PlayerObject> ReadFromJson(string file)
         {
-            List<CodeLists> ListOfServers = new List<CodeLists>();
+            List<PlayerObject> ListOfServers = new List<PlayerObject>();
             file = File.ReadAllText(file);
             try
             {
@@ -98,11 +89,11 @@ namespace rockpaperscissors.Core.Commands
             return ListOfServers;
         }
         ///<summary>
-        /// Saves a passed in list of <see cref="CodeLists"/> to a JSON file named BaseCodes.
+        /// Saves a passed in list of <see cref="PlayerObject"/> to a JSON file named BaseCodes.
         /// </summary>
-        public void WriteToJson(List<CodeLists> obj)
+        public void WriteToJson(List<PlayerObject> obj)
         {
-            using (StreamWriter file = File.CreateText(BaseCodesFile))
+            using (StreamWriter file = File.CreateText(RPSPlayerFile))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(file, obj);
@@ -110,41 +101,36 @@ namespace rockpaperscissors.Core.Commands
 
         }
         ///<summary>
-        /// Pulls in a list of <see cref="CodeLists"/> and formats a JSON structure with data provided from the user. 
+        /// Pulls in a list of <see cref="PlayerObject"/> and formats a JSON structure with data provided from the user. 
         /// </summary>
-        public void NewServerEntry(List<CodeLists> obj)
+        public void PlayerEntry(List<PlayerObject> obj)
         {
             StringBuilder sb = new StringBuilder();
             StringWriter sw = new StringWriter(sb);
 
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                writer.WritePropertyName("CodesList");
+                writer.WritePropertyName("Players");
                 writer.WriteStartArray();
                 writer.Formatting = Formatting.Indented;
                 foreach (var x in obj)
                 {
                     writer.WriteStartObject();
 
-                    writer.WritePropertyName("ServerID");
-                    writer.WriteValue(x.ServerID);
+                    writer.WritePropertyName("PlayerID");
+                    writer.WriteValue(x.PlayerID);
 
-                    writer.WritePropertyName("CodeEntry");
-                    writer.WriteRawValue(x.CodeEntry.ToString());
+                    writer.WritePropertyName("PlayerWins");
+                    writer.WriteRawValue(x.PlayerWins.ToString());
 
-                    writer.WritePropertyName("RoleName");
-                    writer.WriteRawValue(x.Role);
+                    writer.WritePropertyName("PlayerLosses");
+                    writer.WriteRawValue(x.PlayerLosses.ToString());
                     writer.WriteEndObject();
 
                 }
                 writer.WriteEndArray();
             }
-            using (StreamWriter file = File.CreateText(BaseCodesFile))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, obj);
-                int x = 0;
-            }
+            this.WriteToJson(obj);
         }
 
     }
