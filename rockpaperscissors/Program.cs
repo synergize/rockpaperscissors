@@ -13,8 +13,9 @@ namespace rockpaperscissors
     {
         private DiscordSocketClient Client;
         private CommandService Commands;
-        static void Main(string[] args)
-            => new Program().MainAsync().GetAwaiter().GetResult();
+        static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
+
+
         private async Task MainAsync()
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
@@ -31,20 +32,20 @@ namespace rockpaperscissors
             });
 
             Client.MessageReceived += Client_MessageRecieved;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
             Client.Ready += Client_Ready;
-            Client.Log += Client_Log;
+            Client.Log += Log;
 
-            string Token = System.Environment.GetEnvironmentVariable("BOT_TOKEN");
+            string Token = System.Environment.GetEnvironmentVariable("RPS_TOKEN");
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
-            await Task.Delay(-1);
-            
+            await Task.Delay(-1);            
         }
 
-        private async Task Client_Log(LogMessage Message)
+        private Task Log(LogMessage msg)
         {
-            Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
+            Console.WriteLine(msg.Message);
+            return Task.CompletedTask;
         }
 
         private async Task Client_MessageRecieved(SocketMessage MessageParam)
@@ -58,17 +59,26 @@ namespace rockpaperscissors
             int ArgPos = 0;
             if (!(Message.HasCharPrefix('!', ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos))) return;
 
-            var Result = await Commands.ExecuteAsync(Context, ArgPos);
-            if (!Result.IsSuccess)           
+            var Result = await Commands.ExecuteAsync(Context, ArgPos, null);
+            if (!Result.IsSuccess)
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
 
 
-            
+
 
         }
         private async Task Client_Ready()
         {
-            await Client.SetGameAsync("Rock Paper Scissors Bot!", "https://discordapp.com/developers", StreamType.NotStreaming);
+            await Client.SetGameAsync("Rock Paper Scissors Bot!", "https://discordapp.com/developers", ActivityType.Listening);
+        }
+
+        //If someone adds a reaction, run x code. 
+        private async Task OnReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel Channel, SocketReaction Reaction)
+        {
+            //If a bot sends the reaction, disregard. 
+            if (((SocketUser)Reaction.User).IsBot) return;
+
+
         }
     }
 }
