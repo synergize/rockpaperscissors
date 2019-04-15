@@ -6,13 +6,18 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
+using rockpaperscissors.Core.Data.Objects;
+using rockpaperscissors.Core.MiniGames;
 
 namespace rockpaperscissors.Core.Commands
 {
     public class RockPaperScissorsCommands : ModuleBase<SocketCommandContext>
     {
-        public List<int> counter = new List<int>();
-
+        string DataDirectory = @"..\netcoreapp2.0\Data";
+        string RPSPlayerFile = @"..\netcoreapp2.0\Data\Players.json";
+        string RPSGameFile = @"..\netcoreapp2.0\Data\GameCheck.json";
+        PlayerObject P1 = new PlayerObject(129804455964049408, 2, 4);
+        List<PlayerObject> TestList = new List<PlayerObject>();
         bool boolean = true;
 
         [Command("void")]
@@ -29,62 +34,71 @@ namespace rockpaperscissors.Core.Commands
             Embed.WithFooter($"The owner of this bot {Context.Guild.Owner.ToString()}");
             Embed.WithDescription($"Place holder description. \n [This is a hyperlink](https://discordapp.com/developers)");
             Embed.AddField("User Input", Input);
-            boolean = false;
-            try
-            {
-                counter.Add(1);
-                for (int i = 0; i < counter.Count; i++)
-                {
-                    Embed.AddField("Counter", counter[i]);
-                }
-            }
-            catch (Exception ex)
-            {
-                var error = ex;
-            }
 
-
-            await Context.Channel.SendMessageAsync("", false, Embed.Build());
+        }
 
         [Command("play")]
         public async Task StartGame()
         {
-            //Player PlayerOne = new Player(Context.User.Username);
+
+            if (CheckDirectory(DataDirectory, RPSGameFile))
+            {
+                //File didn't exist, was created. First user response. 
+                await Context.Channel.SendMessageAsync(
+                    "Welcome! Game session started. Please have your opponent also type !play in order to join in!");
+            }
+            else
+            {
+                //File Existed, game started. 
+                //RockPaperScissorsLogic GameStart = new RockPaperScissorsLogic();
+                RockPaperScissorsLogic.StartGameRPS();
+            }
+            var PlayerList = ReadFromJson(RPSGameFile);
+            if (PlayerList == null)
+            {
+                //GameEntry(PlayerList, RPSGameFile);
+            }
+            //TestList.Add(P1);
+            //PlayerEntry(TestList);
 
         }
         ///<summary>
         /// Checks if our JSON file exists and returns true or false.
         /// </summary>
-        public bool CodeExists()
+        public bool CodeExists(string file)
         {
-            return File.Exists(BaseCodesFile);
+            return File.Exists(file);
         }
         ///<summary>
         /// Checks if Directory ..\netcoreapp2.2\Data exists. If it doesn't, we create the directory and a blank BaseCodes.Json file
         /// If the directory exists but the BaseCodes file doesn't, we create a blank JSON file.
         /// </summary>
-        public void CheckDirectory(string file)
+        public bool CheckDirectory(string dirLoc, string jsonFile)
         {
-            if (!Directory.Exists(file))
+            if (!Directory.Exists(dirLoc))
             {
                 //If the directory for our basecode json file doesn't exist we create it along with the json file. 
-                DirectoryInfo dir = Directory.CreateDirectory(file);
-                var CreateFile = File.Create(BaseCodesFile);
+                DirectoryInfo dir = Directory.CreateDirectory(dirLoc);
+                var CreateFile = File.Create(jsonFile);
                 CreateFile.Close();
+                return false;
             }
-            else if (!CodeExists())
+            else if (!CodeExists(jsonFile))
             {
                 //if the directory exists but the file doesn't, we create the file. 
-                var CreateFile = File.Create(BaseCodesFile);
+                var CreateFile = File.Create(jsonFile);
                 CreateFile.Close();
+                return true;
             }
+
+            return false;
         }
         ///<summary>
-        /// Returns a list of <see cref="CodeLists"/> objects from a file locate in the passed in "File" location.
+        /// Returns a list of <see cref="PlayerObject"/> objects from a file locate in the passed in "File" location.
         /// </summary>
-        public List<CodeLists> ReadFromJson(string file)
+        public List<PlayerObject> ReadFromJson(string file)
         {
-            List<CodeLists> ListOfServers = new List<CodeLists>();
+            List<PlayerObject> ListOfServers = new List<PlayerObject>();
             file = File.ReadAllText(file);
             try
             {
@@ -98,11 +112,11 @@ namespace rockpaperscissors.Core.Commands
             return ListOfServers;
         }
         ///<summary>
-        /// Saves a passed in list of <see cref="CodeLists"/> to a JSON file named BaseCodes.
+        /// Saves a passed in list of <see cref="PlayerObject"/> to a JSON file named BaseCodes.
         /// </summary>
-        public void WriteToJson(List<CodeLists> obj)
+        public void WriteToJson(List<PlayerObject> obj, string jsonFile)
         {
-            using (StreamWriter file = File.CreateText(BaseCodesFile))
+            using (StreamWriter file = File.CreateText(jsonFile))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(file, obj);
@@ -110,41 +124,65 @@ namespace rockpaperscissors.Core.Commands
 
         }
         ///<summary>
-        /// Pulls in a list of <see cref="CodeLists"/> and formats a JSON structure with data provided from the user. 
+        /// Pulls in a list of <see cref="PlayerObject"/> and formats a JSON structure with data provided from the user. 
         /// </summary>
-        public void NewServerEntry(List<CodeLists> obj)
+        public void PlayerEntry(List<PlayerObject> obj, string jsonFile)
         {
             StringBuilder sb = new StringBuilder();
             StringWriter sw = new StringWriter(sb);
 
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                writer.WritePropertyName("CodesList");
+                writer.WritePropertyName("Players");
                 writer.WriteStartArray();
                 writer.Formatting = Formatting.Indented;
                 foreach (var x in obj)
                 {
                     writer.WriteStartObject();
 
-                    writer.WritePropertyName("ServerID");
-                    writer.WriteValue(x.ServerID);
+                    writer.WritePropertyName("PlayerID");
+                    writer.WriteValue(x.PlayerID);
 
-                    writer.WritePropertyName("CodeEntry");
-                    writer.WriteRawValue(x.CodeEntry.ToString());
+                    writer.WritePropertyName("PlayerWins");
+                    writer.WriteRawValue(x.PlayerWins.ToString());
 
-                    writer.WritePropertyName("RoleName");
-                    writer.WriteRawValue(x.Role);
+                    writer.WritePropertyName("PlayerLosses");
+                    writer.WriteRawValue(x.PlayerLosses.ToString());
                     writer.WriteEndObject();
 
                 }
                 writer.WriteEndArray();
             }
-            using (StreamWriter file = File.CreateText(BaseCodesFile))
+            this.WriteToJson(obj, jsonFile);
+        }
+        public void GameEntry(List<PlayerObject> obj, string jsonFile)
+        {
+            StringBuilder sb = new StringBuilder();
+            StringWriter sw = new StringWriter(sb);
+
+            using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, obj);
-                int x = 0;
+                writer.WritePropertyName("Game");
+                writer.WriteStartArray();
+                writer.Formatting = Formatting.Indented;
+                foreach (var x in obj)
+                {
+                    writer.WriteStartObject();
+
+                    writer.WritePropertyName("PlayerOne");
+                    writer.WriteValue(x.PlayerID);
+
+                    writer.WritePropertyName("PlayerWins");
+                    writer.WriteRawValue(x.PlayerWins.ToString());
+
+                    writer.WritePropertyName("PlayerLosses");
+                    writer.WriteRawValue(x.PlayerLosses.ToString());
+                    writer.WriteEndObject();
+
+                }
+                writer.WriteEndArray();
             }
+            this.WriteToJson(obj, jsonFile);
         }
 
     }
